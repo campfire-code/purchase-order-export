@@ -1,0 +1,35 @@
+# 篝火：打 v*-campfire.* 标签时，把油猴脚本原样发布到 Release（无复用流程可用，脚本自带）
+name: release
+on:
+  push:
+    tags: ['v*-campfire.*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: 发布
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(jq -r .version tool.json)
+          [ "$GITHUB_REF_NAME" = "v$version" ] || { echo "::error::标签与 tool.json 版本不一致"; exit 1; }
+          f=TaoBao_BuyerOrdersExport.user.js
+          sha256sum "$f" > SHA256SUMS.txt
+          cat > notes.md <<'N'
+          ### 安装
+
+          1. 浏览器先装脚本管理器 Tampermonkey（Chrome、Edge、Firefox、Safari 均有）。
+          2. 点击下面的 `TaoBao_BuyerOrdersExport.user.js`，Tampermonkey 会弹出安装页，点安装。
+          3. 打开淘宝网页版「已买到的宝贝」页面使用，详细说明见仓库首页 README。
+
+          脚本与上游一致，未做修改，附 `SHA256SUMS.txt` 可核对。
+
+          ---
+
+          篝火出品 · 收录于篝火 App 应用区。本工具基于上游开源项目，版权归原作者所有，按上游许可证分发。全部工具见 https://github.com/campfire-code/toolkit-hub
+          N
+          sed -i 's/^          //' notes.md
+          gh release create "$GITHUB_REF_NAME" "$f" SHA256SUMS.txt --title "采购单对账 $version" --notes-file notes.md --latest

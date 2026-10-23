@@ -1,3 +1,49 @@
+# 采购单对账（淘宝买家订单导出）
+
+> 篝火出品 · 收录于篝火 App 应用区 · 基于开源项目 [Sky-seeker/BuyerOrdersExport](https://github.com/Sky-seeker/BuyerOrdersExport)（MIT）
+
+在淘宝网页版「已买到的宝贝」页面一键把订单导出成 CSV（Excel 可直接打开），用来和入库、采购记录对账。数据只在你自己的浏览器里处理，导出到本地。
+
+**使用前请注意**
+- 这是浏览器里的**油猴脚本**，不是独立安装的软件，需要先装 Tampermonkey 扩展。
+- 只支持**淘宝**（脚本只匹配 `buyertrade.taobao.com`）；**不支持 1688**。天猫超市的部分字段不能从订单列表获取，需用「添加订单详情」补全。
+- 需要你自己登录淘宝。「快照名称获取」可能触发滑块验证，上游建议非必要不开；建议同时开启「数据获取延时」。
+- 淘宝改版后脚本可能失效，需等上游更新；本仓库跟随上游版本。
+- 订单详情只支持 3 个多月以内的订单。
+
+## 下载
+
+到 [Releases](https://github.com/campfire-code/purchase-order-export/releases/latest) 下载 `TaoBao_BuyerOrdersExport.user.js`（附 `SHA256SUMS.txt` 可核对）。
+
+## 怎么用
+
+1. 浏览器安装 [Tampermonkey](https://www.tampermonkey.net/)。
+2. 在浏览器里打开下载的 `.user.js` 文件（或把它拖进浏览器），在 Tampermonkey 弹出的页面点「安装」。
+3. 登录淘宝，进入「我的淘宝 → 已买到的宝贝」，页面顶部会出现导出工具栏（界面是中文）。
+4. 点「添加本页订单」，翻到下一页再点，直到最后一页；需要物流信息时点「添加订单详情」；最后点「导出订单数据」得到 CSV。
+5. 导出前不要刷新页面，刷新会丢失已添加的数据。用 Excel 打开时建议勾选「Excel 格式适配」，避免订单编号变成科学计数法。
+
+更多选项（黑名单过滤、列顺序自定义、图片尺寸、本地存储设置）见下方上游说明。
+
+## 验收用例
+
+| 操作 | 应得到 |
+|---|---|
+| 安装脚本后，打开淘宝「已买到的宝贝」页面 | 页面顶部出现导出工具栏 |
+| 点「添加本页订单」，再点「导出订单数据」 | 下载 `淘宝买家订单数据导出_日期时间.csv`，含订单编号、店铺、商品名称、单价、数量、实付款等列 |
+
+## 和上游的区别
+
+- 仅新增中文说明、`tool.json` 和篝火发布流程（`.github/workflows/release.yml`），脚本与上游 v2.0.4 一致。
+
+## 归属与许可证
+
+本仓库由**篝火**整理发布，是篝火 App 应用区收录的开源工具之一。脚本全部功能与版权归 [Sky-seeker/BuyerOrdersExport](https://github.com/Sky-seeker/BuyerOrdersExport) 原作者所有，按 MIT 许可证再分发（见 `LICENSE`）。全部工具目录见 [toolkit-hub](https://github.com/campfire-code/toolkit-hub)。
+
+---
+
+以下为上游原始说明：
+
 # 淘宝买家订单数据导出
 
 ## 简介

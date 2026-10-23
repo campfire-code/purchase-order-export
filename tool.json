@@ -1,0 +1,10 @@
+{
+  "id": "e22",
+  "slug": "purchase-order-export",
+  "name": "采购单对账",
+  "version": "2.0.4-campfire.1",
+  "repo": "campfire-code/purchase-order-export",
+  "license": "MIT",
+  "delivery": "userscript",
+  "upstream": { "repo": "Sky-seeker/BuyerOrdersExport", "license": "MIT" }
+}
