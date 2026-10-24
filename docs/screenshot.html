@@ -1,12 +1,93 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>采购单对账</title><style>
-*{box-sizing:border-box}body{margin:0;width:1040px;height:700px;background:#f4f5f7;font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;color:#1d2129;padding:36px}
-.card{background:#fff;border-radius:20px;height:628px;padding:40px 48px;box-shadow:0 2px 14px rgba(0,0,0,.06);position:relative;display:flex;flex-direction:column}
-.brand{position:absolute;right:32px;top:24px;font-size:13px;color:#8a919c}
-h1{margin:0 0 12px;font-size:36px;font-weight:700}
-.desc{font-size:16px;line-height:1.6;color:#4e5560;margin:0 0 22px}
-h2{font-size:15px;color:#ff6a1a;margin:0 0 10px;letter-spacing:1px}
-ol{margin:0;padding:0;list-style:none;counter-reset:n}
-li{counter-increment:n;display:flex;gap:14px;font-size:16px;line-height:1.55;margin-bottom:12px}
-li:before{content:counter(n);flex:none;width:26px;height:26px;border-radius:50%;background:#fff1e8;color:#ff6a1a;font-weight:700;font-size:14px;text-align:center;line-height:26px;margin-top:1px}
-.fmt{margin-top:auto;background:#f4f5f7;border-radius:12px;padding:14px 18px;font-size:14px;line-height:1.5;color:#4e5560}.fmt b{color:#1d2129}
-</style><body><div class="card"><div class="brand">篝火出品</div><h1>采购单对账</h1><p class="desc">在淘宝网页版「已买到的宝贝」页面一键把订单导出成 CSV，用来和入库、采购记录对账。数据只在你自己的浏览器里处理。</p><h2>怎么用</h2><ol><li><span>浏览器安装 Tampermonkey 扩展，打开下载的 .user.js 文件并点「安装」</span></li><li><span>登录淘宝，进入「我的淘宝 → 已买到的宝贝」，页面顶部出现导出工具栏</span></li><li><span>点「添加本页订单」，翻页继续添加；需要物流信息时点「添加订单详情」</span></li><li><span>点「导出订单数据」得到 CSV；导出前不要刷新页面，用 Excel 打开建议勾选「Excel 格式适配」</span></li></ol><div class="fmt"><b>交付形式　</b>油猴脚本（TaoBao_BuyerOrdersExport.user.js），仅支持淘宝，需自己登录淘宝</div></div></body></html>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--a:#B06C27;--ad:#8a5116;--soft:#f6ece0;--ink:#2b2118;--mut:#74685c}
+body{width:1040px;height:700px;background:#fbf7f1;font-family:-apple-system,"PingFang SC","Hiragino Sans GB",sans-serif;color:var(--ink);position:relative;overflow:hidden}
+.head{position:absolute;left:40px;top:28px;right:40px;display:flex;align-items:baseline;gap:16px}
+h1{font-size:30px;font-weight:800;letter-spacing:1px}
+.sub{font-size:15px;color:var(--mut)}
+.brand{margin-left:auto;font-size:13px;color:var(--mut)}
+/* 浏览器窗口 */
+.win{position:absolute;left:40px;top:86px;width:600px;height:584px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(80,50,15,.16);overflow:hidden;border:1px solid #e6dccf}
+.bar{height:36px;background:#efe7dc;display:flex;align-items:center;padding:0 14px;gap:7px}
+.dot{width:10px;height:10px;border-radius:50%;background:#d3c6b4}
+.url{margin-left:12px;flex:1;height:22px;border-radius:11px;background:#fff;font-size:12px;color:var(--mut);line-height:22px;padding:0 12px}
+.page{padding:12px 16px}
+.nav{display:flex;gap:18px;font-size:13px;color:var(--mut);border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:10px}
+.nav b{color:var(--a);border-bottom:2px solid var(--a);padding-bottom:6px}
+/* 工具栏 */
+.tb{border:1.5px solid var(--a);background:#fffaf3;border-radius:8px;padding:10px 12px;position:relative}
+.tag{position:absolute;right:10px;top:-11px;background:var(--a);color:#fff;font-size:12px;padding:2px 10px;border-radius:10px;font-weight:600}
+.row{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:8px;flex-wrap:wrap}
+.row .l{color:var(--mut)}
+.rad{display:inline-flex;align-items:center;gap:3px}
+.rad i{width:10px;height:10px;border-radius:50%;border:1.5px solid #b9a98f;display:inline-block}
+.rad i.on{border-color:var(--a);background:radial-gradient(var(--a) 42%,transparent 45%)}
+.cols{display:flex;gap:10px;margin-bottom:8px}
+.ta{border:1px solid #d9cbb6;background:#fff;border-radius:4px;font-size:11px;line-height:1.5;padding:4px 6px;color:#5d5144}
+.ta small{display:block;color:#a09282;font-size:10px}
+.cb{display:inline-flex;align-items:center;gap:4px;margin-right:10px}
+.cb i{width:12px;height:12px;border:1.5px solid #b9a98f;border-radius:3px;display:inline-block;position:relative}
+.cb i.on{background:var(--a);border-color:var(--a)}
+.cb i.on:after{content:"";position:absolute;left:2.5px;top:0;width:3px;height:7px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.btns{display:flex;gap:8px}
+.btn{flex:1;text-align:center;font-size:12px;font-weight:600;padding:7px 0;border-radius:5px;background:#3b7de0;color:#fff}
+.btn.g{background:#2e9e5b}.btn.x{background:#9a8f82}.btn.o{background:var(--a)}
+/* 订单 */
+.ord{margin-top:12px;border:1px solid #eee;border-radius:6px;font-size:12px}
+.oh{background:#faf8f5;padding:6px 10px;color:var(--mut);display:flex;gap:14px;border-bottom:1px solid #eee}
+.ob{display:flex;gap:10px;padding:8px 10px;align-items:center}
+.img{width:40px;height:40px;border-radius:5px;flex:none}
+.nm{flex:1;line-height:1.4}.nm small{color:var(--mut);display:block}
+.pr{width:60px;text-align:right}
+.toast{position:absolute;right:16px;bottom:14px;background:rgba(43,33,24,.9);color:#fff;font-size:13px;padding:8px 14px;border-radius:6px}
+/* 箭头 */
+.arrow{position:absolute;left:618px;top:330px;width:60px;height:44px;z-index:3}
+/* 表格 */
+.xl{position:absolute;left:668px;top:140px;width:344px;background:#fff;border-radius:10px;box-shadow:0 8px 30px rgba(80,50,15,.16);border:1px solid #e6dccf;overflow:hidden}
+.xt{background:var(--a);color:#fff;font-size:12px;padding:7px 12px;font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:11px}
+th{background:#f3ece2;color:#6b5a45;font-weight:600;padding:5px 5px;text-align:left;border:1px solid #e8dfd1;white-space:nowrap}
+td{padding:6px 5px;border:1px solid #eee8de;white-space:nowrap;overflow:hidden}
+.num{font-variant-numeric:tabular-nums;color:#4e4338}
+.cap{position:absolute;left:672px;width:340px;font-size:13px;color:var(--mut);line-height:1.6}
+.cap b{color:var(--ad)}
+.note{position:absolute;left:672px;top:400px;width:330px;background:var(--soft);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.7}
+.note b{color:var(--ad)}
+</style><body>
+<div class="head"><h1>采购单对账</h1><span class="sub">淘宝「已买到的宝贝」页面，一键导出订单</span><span class="brand">篝火出品</span></div>
+
+<div class="win">
+ <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">已买到的宝贝 - 淘宝网</span></div>
+ <div class="page">
+  <div class="nav"><b>已买到的宝贝</b><span>全部</span><span>待付款</span><span>待发货</span><span>待收货</span><span>待评价</span></div>
+  <div class="tb"><span class="tag">油猴脚本工具栏</span>
+   <div class="row"><span class="l">图片尺寸：</span><span class="rad"><i></i>80×80</span><span class="rad"><i class="on"></i>300×300</span><span class="rad"><i></i>560×560</span><span class="rad"><i></i>800×800</span><span class="rad"><i></i>其它</span></div>
+   <div class="cols">
+    <div class="ta" style="width:250px">订单项目标题<small>下单日期 · 订单编号 · 店铺名称<br>商品名称 · 单价 · 数量 · 订单实付款 …</small></div>
+    <div class="ta" style="flex:1">黑名单关键词<small>保险服务<br>增值服务<br>买家秀</small></div>
+   </div>
+   <div class="row"><span class="cb"><i class="on"></i>黑名单过滤</span><span class="cb"><i class="on"></i>数据获取延时</span><span class="cb"><i></i>快照名称获取</span><span class="cb"><i class="on"></i>Excel 格式适配</span><span class="cb"><i></i>链接一致化</span></div>
+   <div class="row" style="margin-bottom:8px"><div class="btns" style="width:100%"><div class="btn x">重置项目标题</div><div class="btn x">重置黑名单列表</div><div class="btn x">读取本地存储</div><div class="btn x">写入本地存储</div></div></div>
+   <div class="btns"><div class="btn x">清空订单数据</div><div class="btn o">导出订单数据</div><div class="btn">添加订单详情</div><div class="btn g">添加本页订单</div></div>
+  </div>
+  <div class="ord"><div class="oh"><span>2026-10-18</span><span>订单号 4821937560218834</span><span>云岭茶叶旗舰店</span></div>
+   <div class="ob"><div class="img" style="background:linear-gradient(135deg,#c9a46b,#8b6334)"></div><div class="nm">高山乌龙茶叶 500克 袋装<small>规格：浓香型</small></div><div class="pr">¥128.00<br><small style="color:#999">×2</small></div></div></div>
+  <div class="ord"><div class="oh"><span>2026-10-16</span><span>订单号 4819205537716402</span><span>明合包装耗材店</span></div>
+   <div class="ob"><div class="img" style="background:linear-gradient(135deg,#e7d6b5,#b99a63)"></div><div class="nm">快递打包纸箱 五层加厚<small>规格：30×20×15 厘米</small></div><div class="pr">¥46.50<br><small style="color:#999">×10</small></div></div></div>
+  <div class="toast">已添加本页 20 条订单</div>
+ </div>
+</div>
+
+<svg class="arrow" viewBox="0 0 60 44"><path d="M4 22H48M36 8l14 14-14 14" fill="none" stroke="#B06C27" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+
+<div class="xl"><div class="xt">淘宝买家订单数据导出_20261018.csv</div>
+<table><tr><th>下单日期</th><th>订单编号</th><th>店铺名称</th><th>单价</th><th>数量</th></tr>
+<tr><td class="num">10-18</td><td class="num">4821937560218834</td><td>云岭茶叶旗舰店</td><td class="num">128.00</td><td class="num">2</td></tr>
+<tr><td class="num">10-16</td><td class="num">4819205537716402</td><td>明合包装耗材店</td><td class="num">46.50</td><td class="num">10</td></tr>
+<tr><td class="num">10-12</td><td class="num">4811346620093175</td><td>安禾文具批发</td><td class="num">9.80</td><td class="num">50</td></tr>
+<tr><td class="num">10-09</td><td class="num">4806672018845529</td><td>晨光电子配件店</td><td class="num">23.00</td><td class="num">6</td></tr>
+<tr><td class="num">10-08</td><td class="num">4804410957362281</td><td>云岭茶叶旗舰店</td><td class="num">64.00</td><td class="num">4</td></tr>
+</table></div>
+<div class="cap" style="top:92px"><b>导出结果</b>　Excel 直接打开，编号不变形</div>
+<div class="note"><b>三步</b><br>1　逐页点「添加本页订单」<br>2　要物流信息再点「添加订单详情」<br>3　点「导出订单数据」，得到表格<br><span style="color:var(--mut)">导出前不要刷新页面；仅支持淘宝，需自己登录。</span></div>
+</body></html>
